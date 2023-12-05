@@ -1,3 +1,20 @@
+# Demo scenario
+
+The original repo [https://github.com/hashicorp/hc-sec-demos/tree/main/demos/boundary/aws_dynamic_host_catalogs](https://github.com/hashicorp/hc-sec-demos/tree/main/demos/boundary/aws_dynamic_host_catalogs) has been used as a technical asset. 
+
+The creation of 3 dynamic has been added dev, production & database. 
+
+# First steps of the demo :
+1/ Do a Terraform apply to create the boundary objects.
+2/ Show the boundary objects in the UI
+
+# Second steps : 
+1/ Connect to the EC2 interface to show there is no ec2 instances running
+2/ navidate to the /host directory and show the code
+3/ Do a terraform apply and show the the host have been automatically added to your host catalogs with the right tags.
+
+
+The doc below s from the original repo. 
 # Set up a demo of Boundary AWS Dynamic Host Catalogs
 
 Boundary Dynamic Host catalogs allow for Boundary to automatically discover hosts in your cloud environment. This playbook walks you through setting up Boundary to discover hosts in AWS using your Doormat-provided [Individual Sandbox Account](https://docs.prod.secops.hashicorp.services/cloud_service_providers/aws/individual_sbx_accounts/).
