@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+data:
+  vault-agent-config.hcl: |
+    # Comment this out if running as sidecar instead of initContainer
+    exit_after_auth = true
+
+    pid_file = "/home/vault/pidfile"
+
+    auto_auth {
+        method "kubernetes" {
+            mount_path = "auth/kubernetes"
+            config = {
+                role = "example"
+            }
+        }
+
+        sink "file" {
+            config = {
+                path = "/home/vault/.vault-token"
+            }
+        }
+    }
+
+    template {
+    destination = "/etc/secrets/index.html"
+    contents = <<EOT
+    <html>
+    <body>
+    <H1>Some secrets pulled from Vault</H1>
+    <p>This web server runs on a Kubernetes pod.</p>
+    <p>The pod got authenticated to Vault using its assigned Kubernetes Service Account, using Vault Agent as an Init Container.<br>
+    <P>Then Vault Agent has read a static secret and rendered the templated values below on this webpage.</p>
+    {{- with secret "secret/data/myapp/config" }}
+    <ul>
+    <li><pre>username: {{ .Data.data.username }}</pre></li>
+    <li><pre>password: {{ .Data.data.password }}</pre></li>
+    <li><pre>password: {{ .Data.data.ttl }}</pre></li>
+    </ul>
+    {{ end }}
+    <!-- <img src="img/scenario-diagram.png"> -->
+    </body>
+    </html>
+    EOT
+    }
+kind: ConfigMap
+metadata:
+  name: pod-with-vaultagent-initcontainer-config
+  namespace: default

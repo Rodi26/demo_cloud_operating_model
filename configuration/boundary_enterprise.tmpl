@@ -1,0 +1,140 @@
+#boundary_entreprise.hcl
+# disable memory from being swapped to disk
+disable_mlock = true
+
+# API listener configuration block
+listener "tcp" {
+  # Should be the address of the NIC that the controller server will be reached on
+  # Use 0.0.0.0 to listen on all interfaces
+  address = "0.0.0.0:9200"
+  # The purpose of this listener block
+  purpose = "api"
+
+  # TLS Configuration
+  tls_disable   = true
+  #tls_cert_file = "/etc/boundary.d/tls/boundary-cert.pem"
+  #tls_key_file  = "/etc/boundary.d/tls/boundary-key.pem"
+
+  # Uncomment to enable CORS for the Admin UI. Be sure to set the allowed origin(s)
+  # to appropriate values.
+  #cors_enabled = true
+  #cors_allowed_origins = ["https://yourcorp.yourdomain.com", "serve://boundary"]
+}
+
+# Data-plane listener configuration block (used for worker coordination)
+listener "tcp" {
+  # Should be the IP of the NIC that the worker will connect on
+  address = "0.0.0.0:9201"
+  # The purpose of this listener
+  purpose = "cluster"
+}
+
+# Ops listener for operations like health checks for load balancers
+listener "tcp" {
+  # Should be the address of the interface where your external systems'
+  # (eg: Load-Balancer and metrics collectors) will connect on.
+  address = "0.0.0.0:9203"
+  # The purpose of this listener block
+  purpose = "ops"
+
+  tls_disable   = true
+  #tls_cert_file = "/etc/boundary.d/tls/boundary-cert.pem"
+  #tls_key_file  = "/etc/boundary.d/tls/boundary-key.pem"
+}
+
+
+
+
+# Controller configuration block
+controller {
+  # This name attr must be unique across all controller instances if running in HA mode
+  name = "boundary-controller-1"
+  description = "Boundary controller number one"
+
+  # This is the public hostname or IP where the workers can reach the
+  # controller. This should typically be a load balancer address
+  #public_cluster_addr = "example-cluster-lb.example.com"
+  public_cluster_addr = "127.0.0.1"
+
+  # Enterprise license file, can also be the raw value or env:// value
+  license = "file://my_path/license/boundary.hclic"
+
+  # After receiving a shutdown signal, Boundary will wait 10s before initiating the shutdown process.
+  graceful_shutdown_wait_duration = "10s"
+
+  # Database URL for postgres. This is set in boundary.env and
+  #consumed via the “env://” notation.
+  database {
+      url = "postgresql://root:rootpassword@127.0.0.1:5432/postgres?sslmode=disable"
+  }
+}
+
+# Events (logging) configuration. This
+# configures logging for ALL events to both
+# stderr and a file at /var/log/boundary/controller.log
+events {
+  audit_enabled       = true
+  sysevents_enabled   = true
+  observations_enable = true
+  sink {
+    name = "file-sink"
+    description = "All events sent to a file"
+    event_types = ["*"]
+    format = "cloudevents-json"
+    file {
+      path = "my_path/boundary_logs"
+      file_name = "controller.log"
+    }
+    audit_config {
+      audit_filter_overrides {
+        sensitive = "redact"
+        secret    = "redact"
+      }
+    }
+  }
+}
+
+kms "transit" {
+ purpose            = "root"
+  address            = "http://localhost:8200"
+  #token              = "hvs.xxxxxxxxxxxxxxxxxxxxxxxxCb1l2U3Q0SmtLeW8"
+  disable_renewal    = "false"
+  key_name           = "worker"
+  mount_path         = "boundary_kms/"
+  namespace          = "root"
+  #tls_ca_cert        = "/etc/vault/ca_cert.pem"
+  #tls_client_cert    = "/etc/vault/client_cert.pem"
+  #tls_client_key     = "/etc/vault/ca_cert.pem"
+  #tls_server_name    = "vault"
+  tls_skip_verify    = "true"
+}
+
+kms "transit" {
+ purpose            = "recovery"
+  address            = "http://localhost:8200"
+  #token              = "hvs.xxxxxxxxxxxxxxxxxxxxxxxxCb1l2U3Q0SmtLeW8"
+  disable_renewal    = "false"
+  key_name           = "worker"
+  mount_path         = "boundary_kms/"
+  namespace          = "root"
+  #tls_ca_cert        = "/etc/vault/ca_cert.pem"
+  #tls_client_cert    = "/etc/vault/client_cert.pem"
+  #tls_client_key     = "/etc/vault/ca_cert.pem"
+  #tls_server_name    = "vault"
+  tls_skip_verify    = "true"
+}
+
+kms "transit" {
+ purpose            = "worker-auth"
+  address            = "http://localhost:8200"
+  #token              = "hvs.xxxxxxxxxxxxxxxxxxxxxxxxCb1l2U3Q0SmtLeW8"
+  disable_renewal    = "false"
+  key_name           = "worker"
+  mount_path         = "boundary_kms/"
+  namespace          = "root"
+  #tls_ca_cert        = "/etc/vault/ca_cert.pem"
+  #tls_client_cert    = "/etc/vault/client_cert.pem"
+  #tls_client_key     = "/etc/vault/ca_cert.pem"
+  #tls_server_name    = "vault"
+  tls_skip_verify    = "true"
+}

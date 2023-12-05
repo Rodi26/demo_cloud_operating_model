@@ -1,0 +1,31 @@
+{
+  "version": 4,
+  "terraform_version": "1.3.7",
+  "serial": 87,
+  "lineage": "4b7a575f-b694-28ff-fbb7-9a36e1988970",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "vault_namespace",
+      "name": "lobs",
+      "provider": "provider[\"registry.terraform.io/hashicorp/vault\"]",
+      "instances": [
+        {
+          "index_key": "hr",
+          "schema_version": 0,
+          "attributes": {
+            "id": "hr/",
+            "namespace": null,
+            "namespace_id": "ysDN7",
+            "path": "hr",
+            "path_fq": "hr"
+          },
+          "sensitive_attributes": [],
+          "private": "bnVsbA=="
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
